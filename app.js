@@ -1,9 +1,29 @@
 const express = require('express');
-const app = express();
+
+const dotenv = require('dotenv');
+
 const initDB = require("./config/db.js");
-
-
 initDB();
+
+// Import routes
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+
+// Import middleware
+const { errorHandler } = require('./middleware/errorMiddleware');
+
+// Load environment variables from .env file
+dotenv.config();
+
+// Create an Express application
+const app = express();
+
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+// Define routes
+app.use('/', userRoutes);    
+app.use('/admin', adminRoutes); 
 
 app.get('/health', (req, res) => {
     res.send({
@@ -13,12 +33,8 @@ app.get('/health', (req, res) => {
 });
 
 
-
-
-// route not found middleware
-app.use((req, res, next) =>
-    res.status(404).send("You are looking for something that we do not have!")
-);
+// Error handling middleware (should be defined after all routes)
+app.use(errorHandler);
 
 
 const port = process.env.PORT || 3000;
