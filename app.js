@@ -5,10 +5,25 @@ const initDB = require("./config/db.js");
 
 initDB();
 
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
+app.get('/health', (req, res) => {
+    res.send({
+        time: new Date(),
+        status: "Active"
+    });
 });
 
+
+
+
+// route not found middleware
+app.use((req, res, next) =>
+    res.status(404).send("You are looking for something that we do not have!")
+);
+
+//error handler middleware
+app.use((err, req, res, next) => {
+    res.status(500).send("Something went wrong! Please try after some time.");
+});
 
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || `localhost`;
