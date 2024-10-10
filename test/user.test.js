@@ -2,9 +2,9 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const sinon = require('sinon');
 const bcrypt = require('bcrypt');
-const app = require('../app');
-const User = require('../models/userModel');
-const Assignment = require('../models/assignmentModel');
+const app = require('../src/app');
+const User = require('../src/models/userModel');
+const Assignment = require('../src/models/assignmentModel');
 const mongoose = require('mongoose');
 
 chai.use(chaiHttp);

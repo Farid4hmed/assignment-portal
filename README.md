@@ -25,14 +25,14 @@ A backend system for an assignment submission portal, allowing users to upload a
 
 ```
 assignment-portal/
-├── config/         # Database configuration
-├── controllers/    # Request handlers for routes
-├── middleware/     # Custom middleware functions
-├── models/         # Mongoose models for MongoDB
-├── routes/         # Express route definitions
-├── validators/     # Input validation schemas
+├── src/config/         # Database configuration
+├── src/controllers/    # Request handlers for routes
+├── src/middleware/     # Custom middleware functions
+├── src/models/         # Mongoose models for MongoDB
+├── src/routes/         # Express route definitions
+├── src/validators/     # Input validation schemas
 ├── .env            # Environment variables
-├── app.js          # Express app setup
+├── src/app.js          # Express app setup
 ├── package.json    # Project dependencies and scripts
 ├── README.md       # Project documentation
 └── server.js       # Entry point of the application

@@ -51,12 +51,24 @@ exports.uploadAssignment = async (req, res, next) => {
     }
 
     const admin = await User.findOne({ _id: adminId, role: 'Admin' });
-    if (!admin) return res.status(404).json({ error: 'Admin not found' });
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
 
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(404).json({ error: 'No user by this username exists' });
+    }
+
+    const userExists = await User.exists({ _id: userId });
+    if (!userExists) {
+      return res.status(404).json({ error: 'No user by this username exists' });
+    }
 
     const existingAssignment = await Assignment.findOne({ userId, adminId, task });
-    if (existingAssignment) return res.status(400).json({ error: 'Task already exists' });
+    if (existingAssignment) {
+      return res.status(400).json({ error: 'Task already exists' });
+    }
 
     const assignment = new Assignment({ userId, task, adminId });
     await assignment.save();
