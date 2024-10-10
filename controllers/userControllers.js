@@ -39,31 +39,46 @@ exports.loginUser = async (req, res, next) => {
 };
 
 exports.uploadAssignment = async (req, res, next) => {
-    try {
-      const { task, adminId } = req.body;
-  
-      if (!mongoose.Types.ObjectId.isValid(adminId)) {
-        return res.status(400).json({ error: 'Invalid admin ID' });
-      }
-  
-      const admin = await User.findOne({ _id: adminId, role: 'Admin' });
-      if (!admin) {
-        return res.status(404).json({ error: 'Admin not found' });
-      }
-  
-      const assignment = new Assignment({
-        userId: req.user.id,
-        task,
-        adminId,
-      });
-  
-      await assignment.save();
-  
-      res.status(201).json({ message: 'Assignment uploaded successfully' });
-    } catch (err) {
-      next(err);
+  try {
+    const { task, adminId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(adminId)) {
+      return res.status(400).json({ error: 'Invalid admin ID' });
     }
-  };
+
+    const admin = await User.findOne({ _id: adminId, role: 'Admin' });
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+
+    const userId = req.user.id; 
+
+    const existingAssignment = await Assignment.findOne({
+      userId: userId,
+      adminId: adminId,
+      task: task,
+    });
+
+    if (existingAssignment) {
+      return res.status(400).json({ error: 'Task already exists' });
+    }
+
+    const assignment = new Assignment({
+      userId: userId,
+      task: task,
+      adminId: adminId,
+    });
+
+    await assignment.save();
+
+    res.status(201).json({ message: 'Assignment uploaded successfully' });
+  } catch (err) {
+    if (err.code === 11000) { 
+      return res.status(400).json({ error: 'Task already exists' });
+    }
+    next(err);
+  }
+};
 
 exports.getAllAdmins = async (req, res, next) => {
   try {
