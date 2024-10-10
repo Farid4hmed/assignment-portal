@@ -41,7 +41,6 @@ assignment-portal/
 ## Prerequisites
 
 - Node.js (v14 or later)
-- MongoDB
 
 ## Installation
 
