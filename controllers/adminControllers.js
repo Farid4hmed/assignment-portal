@@ -7,8 +7,14 @@ exports.registerAdmin = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
-    const existingAdmin = await User.findOne({ username });
-    if (existingAdmin) return res.status(400).json({ error: 'Admin already exists' });
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      if (existingUser.role === 'User') {
+        return res.status(400).json({ error: 'You are registered as a User' });
+      } else if (existingUser.role === 'Admin') {
+        return res.status(400).json({ error: 'Admin already exists' });
+      }
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const admin = new User({ username, password: hashedPassword, role: 'Admin' });

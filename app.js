@@ -1,30 +1,19 @@
+//Initialize Application
 const express = require('express');
+const app = express();
+app.use(express.json());
 
+//Use Enviornment Variables
 const dotenv = require('dotenv');
+dotenv.config();
 
+
+//Initialize DB
 const initDB = require("./config/db.js");
 initDB();
 
-// Import routes
-const userRoutes = require('./routes/userRoutes');
-const adminRoutes = require('./routes/adminRoutes');
 
-// Import middleware
-const { errorHandler } = require('./middleware/errorMiddleware');
-
-// Load environment variables from .env file
-dotenv.config();
-
-// Create an Express application
-const app = express();
-
-// Middleware to parse JSON bodies
-app.use(express.json());
-
-// Define routes
-app.use('/', userRoutes);    
-app.use('/admin', adminRoutes); 
-
+//health API
 app.get('/health', (req, res) => {
     res.send({
         time: new Date(),
@@ -33,8 +22,22 @@ app.get('/health', (req, res) => {
 });
 
 
-// Error handling middleware (should be defined after all routes)
+//Use routes
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/', userRoutes);    
+app.use('/admin', adminRoutes); 
+
+
+
+// Use error handlers
+const { errorHandler } = require('./middleware/errorMiddleware');
 app.use(errorHandler);
+
+
+
+
+
 
 
 const port = process.env.PORT || 3000;
