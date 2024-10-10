@@ -2,9 +2,9 @@
   "name": "assignment-portal",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --timeout 20000 --exit",
     "start": "nodemon start"
   },
   "keywords": [],
@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "chai": "^4.5.0",
     "dotenv": "^10.0.0",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
@@ -21,5 +22,12 @@
     "nodemon": "^3.1.7",
     "passport": "^0.4.1",
     "passport-google-oauth20": "^2.0.0"
+  },
+  "devDependencies": {
+    "chai-http": "^4.3.0",
+    "mocha": "^10.7.3",
+    "mongodb-memory-server": "^10.1.0",
+    "sinon": "^19.0.2",
+    "supertest": "^7.0.0"
   }
 }
