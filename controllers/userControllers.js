@@ -51,16 +51,6 @@ exports.uploadAssignment = async (req, res, next) => {
         return res.status(404).json({ error: 'Admin not found' });
       }
   
-      const existingAssignment = await Assignment.findOne({
-        userId: req.user.id,
-        adminId: adminId,
-        task: task,
-      });
-  
-      if (existingAssignment) {
-        return res.status(400).json({ error: 'Task already exists' });
-      }
-  
       const assignment = new Assignment({
         userId: req.user.id,
         task,
