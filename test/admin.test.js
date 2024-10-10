@@ -1,10 +1,10 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const sinon = require('sinon'); 
-const bcrypt = require('bcrypt'); 
+const sinon = require('sinon');
+const bcrypt = require('bcrypt');
 const app = require('../app');
 const User = require('../models/userModel');
-const Assignment = require('../models/assignmentModel'); 
+const Assignment = require('../models/assignmentModel');
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -17,9 +17,7 @@ describe('Admin Endpoints', () => {
         // Stub bcrypt.hash to always return 'hashedpassword'
         hashStub = sinon.stub(bcrypt, 'hash').resolves('hashedpassword');
 
-        // Stub bcrypt.compare
-        // For valid password comparisons, resolve to true
-        // For invalid ones, resolve to false
+        // Stub bcrypt.compare to control password comparisons
         compareStub = sinon.stub(bcrypt, 'compare').callsFake((password, hashed) => {
             if (password === 'adminpassword' && hashed === 'hashedpassword') {
                 return Promise.resolve(true);
@@ -29,7 +27,7 @@ describe('Admin Endpoints', () => {
     });
 
     after(() => {
-        // Restore the original methods
+        // Restore original bcrypt methods after tests
         hashStub.restore();
         compareStub.restore();
     });
@@ -48,13 +46,13 @@ describe('Admin Endpoints', () => {
         });
 
         it('should not register an admin with an existing username', (done) => {
-            // Create and save an admin user first
+            // Pre-save an admin user to simulate duplicate registration
             const admin = new User({ username: 'adminuser', password: 'hashedpassword', role: 'Admin' });
             admin.save().then(() => {
                 chai
                     .request(app)
                     .post('/admin/register')
-                    .send({ username: 'adminuser', password: 'adminpassword' }) // Attempt duplicate
+                    .send({ username: 'adminuser', password: 'adminpassword' })
                     .end((err, res) => {
                         expect(res).to.have.status(400);
                         expect(res.body).to.have.property('error', 'Admin already exists');
@@ -63,14 +61,13 @@ describe('Admin Endpoints', () => {
             });
         });
 
-        it('should not allow a user to register as admin', (done) => {
-            // Create and save a regular user first
+        it('should not allow a regular user to register as an admin', (done) => {
             const user = new User({ username: 'john_doe', password: 'hashedpassword', role: 'User' });
             user.save().then(() => {
                 chai
                     .request(app)
                     .post('/admin/register')
-                    .send({ username: 'john_doe', password: 'adminpassword' }) // Attempt to register as admin
+                    .send({ username: 'john_doe', password: 'adminpassword' })
                     .end((err, res) => {
                         expect(res).to.have.status(400);
                         expect(res.body).to.have.property('error', 'You are registered as a User');
@@ -82,7 +79,7 @@ describe('Admin Endpoints', () => {
 
     describe('POST /admin/login', () => {
         beforeEach((done) => {
-            // Create and save an admin user before each login test
+            // Pre-save an admin user for login tests
             const admin = new User({ username: 'adminuser', password: 'hashedpassword', role: 'Admin' });
             admin.save().then(() => done());
         });
@@ -91,7 +88,7 @@ describe('Admin Endpoints', () => {
             chai
                 .request(app)
                 .post('/admin/login')
-                .send({ username: 'adminuser', password: 'adminpassword' }) // Correct plaintext password
+                .send({ username: 'adminuser', password: 'adminpassword' })
                 .end((err, res) => {
                     expect(res).to.have.status(200);
                     expect(res.body).to.have.property('token');
@@ -103,7 +100,7 @@ describe('Admin Endpoints', () => {
             chai
                 .request(app)
                 .post('/admin/login')
-                .send({ username: 'adminuser', password: 'wrongpassword' }) // Incorrect password
+                .send({ username: 'adminuser', password: 'wrongpassword' })
                 .end((err, res) => {
                     expect(res).to.have.status(400);
                     expect(res.body).to.have.property('error', 'Invalid credentials');
@@ -117,12 +114,11 @@ describe('Admin Endpoints', () => {
         let assignmentId;
 
         beforeEach((done) => {
-            // Create admin and user, create assignment, log in as admin
+            // Create admin, user, and an assignment, then log in to get token
             const admin = new User({ username: 'adminuser', password: 'hashedpassword', role: 'Admin' });
             const user = new User({ username: 'johnuser', password: 'hashedpassword', role: 'User' });
 
             Promise.all([admin.save(), user.save()]).then(([savedAdmin, savedUser]) => {
-                // Create an assignment
                 const assignment = new Assignment({
                     userId: savedUser._id,
                     adminId: savedAdmin._id,
@@ -131,11 +127,10 @@ describe('Admin Endpoints', () => {
 
                 assignment.save().then((savedAssignment) => {
                     assignmentId = savedAssignment._id;
-                    // Log in as admin to obtain token
                     chai
                         .request(app)
                         .post('/admin/login')
-                        .send({ username: 'adminuser', password: 'adminpassword' }) // Correct plaintext password
+                        .send({ username: 'adminuser', password: 'adminpassword' })
                         .end((err, res) => {
                             expect(res).to.have.status(200);
                             expect(res.body).to.have.property('token');

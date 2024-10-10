@@ -3,10 +3,12 @@ const Assignment = require('../models/assignmentModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// Register a new admin
 exports.registerAdmin = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
+    // Check if the user already exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       if (existingUser.role === 'User') {
@@ -16,6 +18,7 @@ exports.registerAdmin = async (req, res, next) => {
       }
     }
 
+    // Create and save the new admin
     const hashedPassword = await bcrypt.hash(password, 10);
     const admin = new User({ username, password: hashedPassword, role: 'Admin' });
     await admin.save();
@@ -26,16 +29,20 @@ exports.registerAdmin = async (req, res, next) => {
   }
 };
 
+// Admin login
 exports.loginAdmin = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
+    // Find admin by username
     const admin = await User.findOne({ username, role: 'Admin' });
     if (!admin) return res.status(400).json({ error: 'Invalid credentials' });
 
+    // Verify password
     const match = await bcrypt.compare(password, admin.password);
     if (!match) return res.status(400).json({ error: 'Invalid credentials' });
 
+    // Generate JWT token
     const token = jwt.sign({ id: admin._id, role: admin.role }, process.env.JWT_SECRET);
     res.json({ token });
   } catch (err) {
@@ -43,6 +50,7 @@ exports.loginAdmin = async (req, res, next) => {
   }
 };
 
+// View assignments assigned to the admin
 exports.viewAssignments = async (req, res, next) => {
   try {
     const assignments = await Assignment.find({ adminId: req.user.id })
@@ -54,6 +62,7 @@ exports.viewAssignments = async (req, res, next) => {
   }
 };
 
+// Accept an assignment
 exports.acceptAssignment = async (req, res, next) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
@@ -68,6 +77,7 @@ exports.acceptAssignment = async (req, res, next) => {
   }
 };
 
+// Reject an assignment
 exports.rejectAssignment = async (req, res, next) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
