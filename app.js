@@ -1,23 +1,19 @@
-// app.js
-
-// Initialize Application
 const express = require('express');
 const app = express();
-app.use(express.json());
 
-// Use Environment Variables
+app.use(express.json()); // Enable parsing of JSON bodies
+
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config(); // Load environment variables
 
-// Use Routes
+// Set up routes
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 app.use('/', userRoutes);
 app.use('/admin', adminRoutes);
 
-// Use Error Handlers
+// Error handling middleware
 const { errorHandler } = require('./middleware/errorMiddleware');
 app.use(errorHandler);
 
-// Export the app
 module.exports = app;

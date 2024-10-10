@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 
+// Middleware to ensure the user is authenticated
 exports.ensureAuthenticated = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
@@ -15,10 +16,11 @@ exports.ensureAuthenticated = (req, res, next) => {
   }
 };
 
+// Middleware to authorize admin users
 exports.authorizeAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'Admin') {
-    return next();
+    next();
   } else {
-    return res.status(403).json({ error: 'Access denied: Admins only' });
+    res.status(403).json({ error: 'Access denied: Admins only' });
   }
 };

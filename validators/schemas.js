@@ -1,9 +1,9 @@
 const Joi = require('joi');
 
-// Updated registerSchema to allow underscores in username
+// Validation schema for user registration (allows underscores in username)
 exports.registerSchema = Joi.object({
   username: Joi.string()
-    .pattern(/^[a-zA-Z0-9_]+$/) // Allows alphanumeric characters and underscores
+    .pattern(/^[a-zA-Z0-9_]+$/) // Alphanumeric characters and underscores
     .min(3)
     .max(30)
     .required(),
@@ -11,11 +11,16 @@ exports.registerSchema = Joi.object({
 });
 
 exports.loginSchema = Joi.object({
-  username: Joi.string().pattern(/^[a-zA-Z0-9_]+$/).required(), // Same pattern applied here
+  username: Joi.string()
+    .pattern(/^[a-zA-Z0-9_]+$/)
+    .required(),
   password: Joi.string().required(),
 });
 
 exports.assignmentSchema = Joi.object({
   task: Joi.string().min(1).required(),
-  adminId: Joi.string().hex().length(24).required(),
+  adminId: Joi.string()
+    .hex()
+    .length(24) // Ensures valid MongoDB ObjectId
+    .required(),
 });

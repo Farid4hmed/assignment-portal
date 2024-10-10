@@ -1,8 +1,8 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const sinon = require('sinon'); 
-const bcrypt = require('bcrypt'); 
-const app = require('../app'); 
+const sinon = require('sinon');
+const bcrypt = require('bcrypt');
+const app = require('../app');
 const User = require('../models/userModel');
 const Assignment = require('../models/assignmentModel');
 const mongoose = require('mongoose');
@@ -15,22 +15,17 @@ describe('User Endpoints', () => {
   let compareStub;
 
   before(() => {
-    // Stub bcrypt.hash to always return 'hashedpassword'
+    // Stub bcrypt methods for consistent password hashing and comparison
     hashStub = sinon.stub(bcrypt, 'hash').resolves('hashedpassword');
-
-    // Stub bcrypt.compare
-    // For valid password comparisons, resolve to true
-    // For invalid ones, resolve to false
     compareStub = sinon.stub(bcrypt, 'compare').callsFake((password, hashed) => {
-      if (password === 'userpassword' && hashed === 'hashedpassword') {
-        return Promise.resolve(true);
-      }
-      return Promise.resolve(false);
+      return password === 'userpassword' && hashed === 'hashedpassword'
+        ? Promise.resolve(true)
+        : Promise.resolve(false);
     });
   });
 
   after(() => {
-    // Restore the original methods
+    // Restore bcrypt methods after tests
     hashStub.restore();
     compareStub.restore();
   });
@@ -40,7 +35,7 @@ describe('User Endpoints', () => {
       chai
         .request(app)
         .post('/register')
-        .send({ username: 'johnuser', password: 'userpassword' }) // Plaintext password
+        .send({ username: 'johnuser', password: 'userpassword' })
         .end((err, res) => {
           expect(res).to.have.status(201);
           expect(res.body).to.have.property('message', 'User registered successfully');
@@ -48,16 +43,14 @@ describe('User Endpoints', () => {
         });
     });
 
-    it('should not register a user with an existing username', function (done) {
-      
-      // Create and save a user with username 'johnuser' and password 'hashedpassword'
+    it('should not register a user with an existing username', (done) => {
+      // Pre-save a user and attempt to register the same username
       const user = new User({ username: 'johnuser', password: 'hashedpassword', role: 'User' });
       user.save().then(() => {
-        // Attempt to register the same username again
         chai
           .request(app)
           .post('/register')
-          .send({ username: 'johnuser', password: 'userpassword' }) // Plaintext password
+          .send({ username: 'johnuser', password: 'userpassword' })
           .end((err, res) => {
             expect(res).to.have.status(400);
             expect(res.body).to.have.property('error', 'User already exists');
@@ -70,7 +63,7 @@ describe('User Endpoints', () => {
       chai
         .request(app)
         .post('/register')
-        .send({ username: 'jd', password: '123' }) // Invalid data: username too short, password too short
+        .send({ username: 'jd', password: '123' }) // Invalid: username and password too short
         .end((err, res) => {
           expect(res).to.have.status(400);
           expect(res.body).to.have.property('error');
@@ -81,7 +74,7 @@ describe('User Endpoints', () => {
 
   describe('POST /login', () => {
     beforeEach((done) => {
-      // Create and save a user with username 'johnuser' and password 'hashedpassword'
+      // Pre-save a user for login tests
       const user = new User({ username: 'johnuser', password: 'hashedpassword', role: 'User' });
       user.save().then(() => done());
     });
@@ -90,7 +83,7 @@ describe('User Endpoints', () => {
       chai
         .request(app)
         .post('/login')
-        .send({ username: 'johnuser', password: 'userpassword' }) // Correct plaintext password
+        .send({ username: 'johnuser', password: 'userpassword' }) // Correct password
         .end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.body).to.have.property('token');
@@ -111,19 +104,17 @@ describe('User Endpoints', () => {
     });
   });
 
-
   describe('GET /admins', () => {
     let userToken;
 
     beforeEach((done) => {
-      // Create and save a user with username 'johnuser' and password 'hashedpassword'
+      // Pre-save a user and log in to get token
       const user = new User({ username: 'johnuser', password: 'hashedpassword', role: 'User' });
       user.save().then(() => {
-        // Log in to get token
         chai
           .request(app)
           .post('/login')
-          .send({ username: 'johnuser', password: 'userpassword' }) // Plaintext password
+          .send({ username: 'johnuser', password: 'userpassword' }) 
           .end((err, res) => {
             expect(res).to.have.status(200);
             expect(res.body).to.have.property('token');
@@ -134,7 +125,7 @@ describe('User Endpoints', () => {
     });
 
     it('should get all admins', (done) => {
-      // Create and save an admin user with username 'admin_user' and password 'hashedpassword'
+      // Pre-save an admin and retrieve the admin list
       const admin = new User({ username: 'admin_user', password: 'hashedpassword', role: 'Admin' });
       admin.save().then(() => {
         chai
@@ -162,23 +153,21 @@ describe('User Endpoints', () => {
     });
   });
 
-
   describe('POST /upload', () => {
     let userToken;
     let adminId;
 
     beforeEach((done) => {
-      // Create and save a user and an admin
+      // Pre-save a user and admin, then log in to get token
       const user = new User({ username: 'johnuser', password: 'hashedpassword', role: 'User' });
       const admin = new User({ username: 'admin_user', password: 'hashedpassword', role: 'Admin' });
 
       Promise.all([user.save(), admin.save()]).then(([savedUser, savedAdmin]) => {
         adminId = savedAdmin._id;
-        // Log in to get user token
         chai
           .request(app)
           .post('/login')
-          .send({ username: 'johnuser', password: 'userpassword' }) 
+          .send({ username: 'johnuser', password: 'userpassword' })
           .end((err, res) => {
             expect(res).to.have.status(200);
             expect(res.body).to.have.property('token');

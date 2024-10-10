@@ -1,12 +1,8 @@
-// server.js
-
 const app = require('./app');
-
-// Initialize Database
 const initDB = require('./config/db');
-initDB();
 
-// Start the Server
+initDB(); // Initialize database
+
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || 'localhost';
 
