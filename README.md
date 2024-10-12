@@ -57,8 +57,8 @@ assignment-portal/
 
 3. Create a `.env` file in the root directory:
    ```
-   MONGODB_URI=mongodb+srv://faridahmed:TAJgz7S5aiGu1b95@cluster0.d33pvho.mongodb.net/submission_portal?retryWrites=true&w=majority&appName=Cluster0
-   JWT_SECRET=thesecret
+   MONGODB_URI=<YOUR_MONGODB_URI>
+   JWT_SECRET=<YOUR_JWT_SECRET>
    PORT=3000
    HOST=localhost
    ```
